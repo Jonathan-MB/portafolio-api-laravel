@@ -11,4 +11,12 @@ class State extends Model
     protected $fillable = [
         'state_name'
     ];
+
+    public function notes(){
+        
+        return $this->hasMany(Note::class);
+
+    }
+
+
 }
