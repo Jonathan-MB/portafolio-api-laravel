@@ -7,9 +7,7 @@ use PHPUnit\Framework\Constraint\Constraint;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
@@ -20,8 +18,6 @@ return new class extends Migration
             $table->foreignId('rol_id')->constrained('rols');
             $table->timestamps();
         });
-
-       
 
         
     }
