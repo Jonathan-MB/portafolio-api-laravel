@@ -11,4 +11,12 @@ class Visibility extends Model
     protected $fillable = [
         'visibility_name'
     ];
+
+
+    public function Notes(){
+        
+        return $this->hasMany(Note::class);
+
+    }
+
 }
