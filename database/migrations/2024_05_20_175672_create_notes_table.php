@@ -12,7 +12,7 @@ return new class extends Migration
         Schema::create('notes', function (Blueprint $table) {
             $table->id();
             $table->string('title',50);
-            $table->text('text',500);
+            $table->string('text');
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('state_id')->constrained('states');
             $table->foreignId('visibility_id')->constrained('visibilities');

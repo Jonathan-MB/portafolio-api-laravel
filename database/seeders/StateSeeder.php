@@ -14,7 +14,6 @@ class StateSeeder extends Seeder
     public function run(): void
     {
 
-        // insercion de estados a base de datos
 
         $states = [
             [

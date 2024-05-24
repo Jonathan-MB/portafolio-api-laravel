@@ -13,7 +13,10 @@ class Note extends Model
 
     protected $fillable = [
         'title',
-        'text'
+        'text',
+        'user_id',
+        'state_id',
+        'visibility_id'
     ];
 
     public function user(){
