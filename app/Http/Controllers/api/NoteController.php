@@ -77,7 +77,7 @@ class NoteController extends Controller
     // Controllador Show de Notes (busca)-------------------------------------------------------------------------------
     public function show($id)
     {
-
+        
         $note = Note::find($id);
         if ($note) {
             return response()->json($note);
