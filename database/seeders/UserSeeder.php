@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
@@ -24,6 +25,7 @@ class UserSeeder extends Seeder
             DB::table('users')->insert([
                 'name' => 'Jonathan',
                 'email' => 'jmarin@ejemplo.com',
+                'password' => Hash::make('123456'),
                 'rol_id' => 1,
                 'updated_at' => now(),
                 'created_at' => now(),
