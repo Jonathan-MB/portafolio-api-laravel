@@ -12,7 +12,7 @@ use App\Http\Controllers\api\VisibilityController;
 
 
 
-// Generacion de rutas individuales -----------------------------------------------------------------------------------
+// Creacion de rutas individuales -----------------------------------------------------------------------------------
 
 Route::post('register', [AuthController::class, 'store']);
 
@@ -20,16 +20,26 @@ Route::post('login', [AuthController::class, 'login']);
 
 
 
-
+// Agrupacion de rutas
 Route::group([
-    "middleware" => ["auth:sanctum"]
+
+    'middleware' =>
+    [
+        // Proteccion autentificacion  sanctum 
+        'auth:sanctum',
+        // Limitacion solicitudes x ruta usuario Auth ( 60 x Min )
+        'throttle:60'
+    ]
 ], function () {
 
 
-    // Generación de rutas --------------------------------------------------------------------------------------------------
+    Route::get('allNote', [NoteController::class, 'allNote']);
+    Route::get('notePublic', [NoteController::class, 'publicNote']);
+
+    // Creacion automatica rutas  --------------------------------------------------------------------------------------------------
     Route::resources([
 
-        // generacion de rutas para users
+        // Generacion de rutas para users
         'user' => UserController::class,
 
         // generacion de rutas para notes
@@ -47,7 +57,7 @@ Route::group([
 });
 
 
-// Manejo de rutas inexistentes y mal manejo de metodos -----------------------------------------------------------------------------------------
+// Manejo de rutas inexistentes  -----------------------------------------------------------------------------------------
 
 Route::any('{fallbackPlaceholder?}', [FallbackController::class, 'fallback'])
     ->where('fallbackPlaceholder', '.*');
