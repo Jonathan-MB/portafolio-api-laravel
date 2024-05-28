@@ -33,9 +33,11 @@ Route::group([
 ], function () {
 
 
-    Route::get('allNote', [NoteController::class, 'allNote']);
+    Route::get('noteAll', [NoteController::class, 'noteAll']);
     Route::get('notePublic', [NoteController::class, 'publicNote']);
-
+    Route::put('userAdmin/{user}', [UserController::class, 'updateAdmin']);
+    Route::delete('userAdmin/{user}', [UserController::class, 'destroyAdmin']);
+    
     // Creacion automatica rutas  --------------------------------------------------------------------------------------------------
     Route::resources([
 

@@ -24,7 +24,7 @@ class UserFactory extends Factory
         return [
             'name' => fake()->name(45),
             'email' => fake()->unique()->safeEmail(),
-            'rol_id' => fake()->numberBetween(1,2),
+            'rol_id' => fake()->numberBetween(2,3),
             'password' => Hash::make($this->faker->password(6,10)) ,
             'updated_at' => now(),
             'created_at' => now(),

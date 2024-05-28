@@ -4,18 +4,16 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Exception;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use PhpParser\Node\Stmt\ElseIf_;
-use Throwable;
 use Carbon\Carbon;
 
 class AuthController extends Controller
 {
+
 
 
 
@@ -52,17 +50,17 @@ class AuthController extends Controller
                     'password' => Hash::make($request->password),
                 ]);
 
-                
+
                 // // Genera token autenticacion
                 $token = $user->createToken('api')->plainTextToken;
-                
-                
+
+
                 $userToken = $user->tokens()->latest()->first();
-                
+
                 // Establece fecha vencimiento token
                 $userToken->expires_at = Carbon::now()->addHour();
                 $userToken->save();
-                
+
 
 
                 return response()->json(
@@ -70,7 +68,7 @@ class AuthController extends Controller
                         'status' => true,
                         'message' => 'Usuario creado exitosamente',
                         'token' => $token,
-                        'typeToken'=> 'Bearer',
+                        'typeToken' => 'Bearer',
                         'UserInfo' => [
                             'name' => $user->name,
                             'email' => $user->email,
@@ -145,7 +143,7 @@ class AuthController extends Controller
                         'status' => true,
                         'message' => 'Usuario creado exitosamente',
                         'token' => $token,
-                        'typeToken'=> 'Bearer',
+                        'typeToken' => 'Bearer',
                         'UserInfo' => [
                             'name' => $user->name,
                             'email' => $user->email,

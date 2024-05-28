@@ -5,86 +5,240 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
-use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use PgSql\Lob;
+
 
 class UserController extends Controller
 {
 
+    // Tipos de usuarios
+    const rolMaster = 1;
+    const rolAdmin = 2;
+    const rolUsuario = 3;
 
-    // Controllador Index de User -------------------------------------------------------------------------------------
+
+
+    // Controlador Index de User -------------------------------------------------------------------------------------
     public function index()
     {
+        try {
+            $currentUser = Auth::user();
+            if ($currentUser->rol_id == self::rolAdmin || $currentUser->rol_id == self::rolAdmin) {
+                $users = User::select('id', 'name', 'email', 'rol_id')->get();
 
-        $users = User::all();
-        return response()->json($users);
-    }
-
-
-    // Controllador Show de User (busca)-------------------------------------------------------------------------------
-    public function show($id)
-    {
-
-        $user = User::find($id);
-        if ($user) {
-            return response()->json($user);
-        } else {
+                if ($users->isEmpty()) {
+                    return response()->json(
+                        [
+                            'status' => true,
+                            'message' => 'No hay usuarios'
+                        ]
+                    );
+                } else {
+                    return response()->json(
+                        [
+                            'status' => true,
+                            'users' => $users
+                        ]
+                    );
+                }
+            } else {
+                return response()->json(
+                    [
+                        'status' => false,
+                        'message' => 'No autorizado'
+                    ],
+                    403
+                );
+            }
+        } catch (\Throwable $ex) {
+            Log::error('Error en UserController@index: ' . $ex->getMessage());
             return response()->json(
                 [
-                    'message' => 'Usuario no encontrada'
+                    'status' => false,
+                    'message' => 'Se produjo un error en el servidor'
                 ],
-                404
+                500
+            );
+        }
+    }
+
+    // Controlador Show de User (busca)-------------------------------------------------------------------------------
+    public function show($id)
+    {
+        try {
+            $currentUser = Auth::user();
+            $user = User::select('id', 'name', 'email', 'rol_id')->find($id);
+
+            if ($user) {
+                if ($currentUser->rol_id == self::rolAdmin || $currentUser->rol_id == self::rolMaster) {
+                    return response()->json([
+                        'status' => true,
+                        'user' => $user
+                    ]);
+                } else {
+                    return response()->json(
+                        [
+                            'status' => false,
+                            'message' => 'No autorizado'
+                        ],
+                        403
+                    );
+                }
+            } else {
+                return response()->json(
+                    [
+                        'status' => false,
+                        'message' => 'Usuario no encontrado'
+                    ],
+                    404
+                );
+            }
+        } catch (\Throwable $ex) {
+            Log::error('Error en UserController@show: ' . $ex->getMessage());
+            return response()->json(
+                [
+                    'status' => false,
+                    'message' => 'Se produjo un error en el servidor'
+                ],
+                500
+            );
+        }
+    }
+
+    // Controlador Update de User solo para uso propio (Actualiza usuario) -------------------------------------------------------------------
+    public function update(Request $request, $id)
+    {
+        try {
+            $currentUser = Auth::user();
+            $user = User::select('id', 'name', 'email', 'update_at')->findOrFail($id);
+
+            if ($currentUser->id == $user->id) {
+                $validateUser = $request->validate([
+                    'name' => 'required|string|max:45',
+                    'email' => 'required|max:45|email|unique:users,email,' . $id . ',id',
+                ]);
+
+                $user->update($validateUser);
+
+                return response()->json(
+                    [
+                        'status' => true,
+                        'message' => 'Usuario actualizado exitosamente',
+                        'user' => $user
+                    ],
+                    200
+                );
+            } else {
+                return response()->json(
+                    [
+                        'status' => false,
+                        'message' => 'No autorizado'
+                    ],
+                    403
+                );
+            }
+        } catch (\Throwable $ex) {
+            Log::error('Error en UserController@update: ' . $ex->getMessage());
+            return response()->json(
+                [
+                    'status' => false,
+                    'message' => 'Se produjo un error en el servidor',
+                    'error' => $ex->getMessage()
+                ],
+                500
+            );
+        }
+    }
+
+    // Controlador UpdateAdmin de User solo para Admin (Actualiza usuario) -------------------------------------------------------------------
+    public function updateAdmin(Request $request, $id)
+    {
+        try {
+            $currentUser = Auth::user();
+            $user = User::select('id', 'name', 'email', 'update_at')->findOrFail($id);
+
+            if (($currentUser->rol_id == self::rolAdmin and $user->rol_id != self::rolAdmin and $user->rol_id != self::rolMaster) || $currentUser->rol_id == self::rolMaster) {
+                $validateUser = $request->validate([
+                    'name' => 'required|string|max:45',
+                    'email' => 'required|max:45|email|unique:users,email,' . $id . ',id',
+                ]);
+
+                $user->update($validateUser);
+
+                return response()->json(
+                    [
+                        'status' => true,
+                        'message' => 'Usuario actualizado exitosamente',
+                        'user' => $user
+                    ],
+                    200
+                );
+            } else {
+                return response()->json(
+                    [
+                        'status' => false,
+                        'message' => 'No autorizado'
+                    ],
+                    403
+                );
+            }
+        } catch (\Throwable $ex) {
+            Log::error('Error en UserController@update: ' . $ex->getMessage());
+            return response()->json(
+                [
+                    'status' => false,
+                    'message' => 'Se produjo un error en el servidor',
+                    'error' => $ex->getMessage()
+                ],
+                500
             );
         }
     }
 
 
-
-
-    // Controllador edit de Users (ruta para editar usuarios) -----------------------------------------------------------
-    public function edit()
+    // Controlador Destroy de User (Elimina usuario) ------------------------------------------------------------------
+    public function destroy($id)
     {
-        return view('editarUser');
-    }
-
-
-
-    // Controllador update de User (Actualiza usuario) -------------------------------------------------------------------
-    public function update(Request $request, $id)
-    {
-
         try {
+            $currentUser = Auth::user();
+            $user = User::find($id);
 
-            $user = User::findOrFail($id);
-            //validaciones de la informacion recibida por Json
-            $validateUser = $request->validate([
-                'name' => 'required|string|max:45',
-                'email' => 'required|max:45|email|unique:users,email,'.$id.',id',  // correo unico a exepcion de  este usuario
-                'rol_id' => 'required|integer|exists:rols,id'
-
-            ]);
-
-            $user->update($validateUser);
-
+            if ($user) {
+                if ($currentUser->rol_id == $user->id) {
+                    $user->delete();
+                    return response()->json(
+                        [
+                            'status' => true,
+                            'message' => 'Usuario eliminado exitosamente'
+                        ],
+                        200
+                    );
+                } else {
+                    return response()->json(
+                        [
+                            'status' => false,
+                            'message' => 'No autorizado'
+                        ],
+                        403
+                    );
+                }
+            } else {
+                return response()->json(
+                    [
+                        'status' => false,
+                        'message' => 'Usuario no encontrado'
+                    ],
+                    404
+                );
+            }
+        } catch (\Throwable $ex) {
+            Log::error('Error en UserController@destroy: ' . $ex->getMessage());
             return response()->json(
                 [
-                    'message' => 'Usuario Actualizado exitosamente',
-                    'userInfo' => $user
-                ],
-                200
-            );
-
-            // Catch errores
-        } catch (Exception $error) {
-            // Registra  error
-            Log::error('Error al Actualizar el usuario: ' . $error->getMessage());
-
-            // Respuesta error
-            return response()->json(
-                [
-                    'mensaje' => 'Error al Actualizar el usuario',
-                    'error' => $error->getMessage()
+                    'status' => false,
+                    'message' => 'Se produjo un error en el servidor',
+                    'error' => $ex->getMessage()
                 ],
                 500
             );
@@ -94,38 +248,48 @@ class UserController extends Controller
 
 
 
-    // Controllador Destroy de User (Elimina  usuario) ------------------------------------------------------------------
-    public function destroy($id)
+    // Controlador Destroy de User (Elimina usuario Administrador) ------------------------------------------------------------------
+    public function destroyAdmin($id)
     {
         try {
+            $currentUser = Auth::user();
             $user = User::find($id);
 
             if ($user) {
-
-                $user->delete();
-
-                return response()->json(
-                    [
-                        'message' => 'Ususario eliminado exitosamente'
-                    ],
-                    200
-                );
+                if (($currentUser->rol_id == self::rolAdmin and $user->rol_id != self::rolAdmin and $user->rol_id != self::rolMaster) || $currentUser->rol_id == self::rolMaster) {
+                    $user->delete();
+                    return response()->json(
+                        [
+                            'status' => true,
+                            'message' => 'Usuario eliminado exitosamente'
+                        ],
+                        200
+                    );
+                } else {
+                    return response()->json(
+                        [
+                            'status' => false,
+                            'message' => 'No autorizado'
+                        ],
+                        403
+                    );
+                }
             } else {
                 return response()->json(
                     [
+                        'status' => false,
                         'message' => 'Usuario no encontrado'
                     ],
                     404
                 );
             }
-        } catch (\Exception $error) {
-            // Catch errores
-            Log::error('Error al eliminar el usuario: ' . $error->getMessage());
-
+        } catch (\Throwable $ex) {
+            Log::error('Error en UserController@destroy: ' . $ex->getMessage());
             return response()->json(
                 [
-                    'mensaje' => 'Error al eliminar el usuario',
-                    'error' => $error->getMessage()
+                    'status' => false,
+                    'message' => 'Se produjo un error en el servidor',
+                    'error' => $ex->getMessage()
                 ],
                 500
             );
