@@ -18,6 +18,11 @@ class RolSeeder extends Seeder
 
         $rols = [
             [
+                'rol_name' => 'Master',
+                'updated_at' => now(),
+                'created_at' => now(),
+            ],
+            [
                 'rol_name' => 'Administrador',
                 'updated_at' => now(),
                 'created_at' => now(),

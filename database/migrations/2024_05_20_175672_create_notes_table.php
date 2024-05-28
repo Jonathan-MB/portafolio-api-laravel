@@ -13,9 +13,9 @@ return new class extends Migration
             $table->id();
             $table->string('title',50);
             $table->string('text');
-            $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('state_id')->constrained('states');
-            $table->foreignId('visibility_id')->constrained('visibilities');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('state_id')->constrained('states')->onDelete('restrict');
+            $table->foreignId('visibility_id')->constrained('visibilities')->onDelete('restrict');
             $table->timestamps();
         });
     }
