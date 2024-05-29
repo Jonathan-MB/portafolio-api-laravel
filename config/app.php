@@ -65,7 +65,10 @@ return [
     |
     */
 
-    'timezone' => env('APP_TIMEZONE', 'UTC'),
+
+    // cambio de zona horaria a colombia
+    'timezone' => env('APP_TIMEZONE', 'America/Bogota'),
+
 
     /*
     |--------------------------------------------------------------------------

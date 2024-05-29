@@ -15,6 +15,6 @@ class NoteSeeder extends Seeder
 
         // creacion de notas por factory
 
-        Note::factory(15)->create();
+        Note::factory(25)->create();
     }
 }
