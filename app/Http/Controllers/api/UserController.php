@@ -24,7 +24,7 @@ class UserController extends Controller
     {
         try {
             $currentUser = Auth::user();
-            if ($currentUser->rol_id == self::rolAdmin || $currentUser->rol_id == self::rolAdmin) {
+            if ($currentUser->rol_id == self::rolAdmin || $currentUser->rol_id == self::rolMaster) {
                 $users = User::select('id', 'name', 'email', 'rol_id')->get();
 
                 if ($users->isEmpty()) {
@@ -152,17 +152,32 @@ class UserController extends Controller
     }
 
     // Controlador UpdateAdmin de User solo para Admin (Actualiza usuario) -------------------------------------------------------------------
-    public function updateAdmin(Request $request, $id)
+    public function updateAdmin(Request $request)
     {
         try {
             $currentUser = Auth::user();
-            $user = User::select('id', 'name', 'email', 'update_at')->findOrFail($id);
+            $id = $currentUser->id;
+            $user = User::findOrFail($id);
 
-            if (($currentUser->rol_id == self::rolAdmin and $user->rol_id != self::rolAdmin and $user->rol_id != self::rolMaster) || $currentUser->rol_id == self::rolMaster) {
-                $validateUser = $request->validate([
-                    'name' => 'required|string|max:45',
-                    'email' => 'required|max:45|email|unique:users,email,' . $id . ',id',
-                ]);
+            if ($currentUser->rol_id != self::rolAdmin and $currentUser->rol_id != self::rolMaster) {
+                if ($currentUser->rol_id == self::rolAdmin) {
+
+                    $validateUser = $request->validate([
+                        'name' => 'required|string|max:45',
+                        'email' => 'required|max:45|email|unique:users,email,' . $id . ',id',
+                        'rol_id' => 'required|integer|exists:rols,id|not_in:' . self::rolMaster,
+                    ]);
+                }
+
+
+                if ($currentUser->rol_id == self::rolMaster) {
+
+                    $validateUser = $request->validate([
+                        'name' => 'required|string|max:45',
+                        'email' => 'required|max:45|email|unique:users,email,' . $id . ',id',
+                        'rol_id' => 'required|exists:rols,id|integer',
+                    ]);
+                }
 
                 $user->update($validateUser);
 
@@ -185,17 +200,13 @@ class UserController extends Controller
             }
         } catch (\Throwable $ex) {
             Log::error('Error en UserController@update: ' . $ex->getMessage());
-            return response()->json(
-                [
-                    'status' => false,
-                    'message' => 'Se produjo un error en el servidor',
-                    'error' => $ex->getMessage()
-                ],
-                500
-            );
+            return response()->json([
+                'status' => false,
+                'message' => 'Se produjo un error en el servidor',
+                'error' => $ex->getMessage()
+            ], 500);
         }
     }
-
 
     // Controlador Destroy de User (Elimina usuario) ------------------------------------------------------------------
     public function destroy($id)
