@@ -27,7 +27,7 @@ class AuthController extends Controller
                 [
                     'name' => 'required|string|max:45',
                     'email' => 'required|email|unique:users,email|max:45',
-                    'password' => 'required|string|min:5'
+                    'password' => 'required|string|min:5|max:30'
 
                 ]
             );
@@ -72,7 +72,6 @@ class AuthController extends Controller
                         'UserInfo' => [
                             'name' => $user->name,
                             'email' => $user->email,
-
                         ]
                     ],
                     200
@@ -141,7 +140,7 @@ class AuthController extends Controller
                 return response()->json(
                     [
                         'status' => true,
-                        'message' => 'Usuario creado exitosamente',
+                        'message' => 'Usuario logueado correctamente',
                         'token' => $token,
                         'typeToken' => 'Bearer',
                         'UserInfo' => [

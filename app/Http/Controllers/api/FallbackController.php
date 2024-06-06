@@ -10,6 +10,6 @@ class FallbackController extends Controller
 {
     public function fallback(Request $request)
     {
-        return view('rutaNoExiste');
+        return view('rutaNoExiste')->with(['hola'=>'uno','hola'=>'uno']);
     }
 }
